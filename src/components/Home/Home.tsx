@@ -1,32 +1,39 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import { Drink } from '../../types/drink'
-import { Button, Container, NumberDisplay } from './styles';
 
 interface HomeProps {
     getCocktail: () => void;
-    state: string;    
+    cocktailState: string;    
     ingredients: Array<string>;
     measures: Array<string>;
     cocktail: Drink;
+    translate: {
+        description: string,
+        alcoholic: string,
+        category: string,
+        measuresRu: Array<string>,
+    };
 }
 @observer
 export class Home extends React.Component<HomeProps, {}> {
     render() {
         const {
             getCocktail,
-            state,
+            cocktailState,
             cocktail,
             ingredients,
-            measures
+            measures,
+            translate
         } = this.props;
         const ingredientsTable = () => (
             <table>
                 <tbody>
                     {ingredients.map((el, index) => (
-                        <tr>
+                        <tr key={index}>
                             <td>{el}</td>
                             <td>{measures[index]}</td>
+                            <td style={{paddingLeft: 10, borderLeft: '1px solid #ccc'}}>ru: {translate.measuresRu[index]}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -40,10 +47,10 @@ export class Home extends React.Component<HomeProps, {}> {
                         type="button"
                         onClick={getCocktail}
                     >
-                        Get random cocktail
+                        Случайный коктейль
                     </button>                    
                 </div>
-                {state === 'pending' &&
+                {cocktailState === 'pending' &&
                     <div style={{
                         position: 'fixed',
                         background: '#fff',
@@ -61,13 +68,20 @@ export class Home extends React.Component<HomeProps, {}> {
                 {cocktail &&
                     <div className="cocktail">
                         <h1 className="cocktail__title">{cocktail.strDrink}</h1>
-                        <div className="cocktail__alcoholic">{cocktail.strAlcoholic}</div>
-                        <div className="cocktail__category">Категория: {cocktail.strCategory}</div>
+                        <div className="cocktail__alcoholic">{translate.alcoholic}</div>
+                        <div className="cocktail__category">Категория: {translate.category}</div>
                         <div className="cocktail__image-wrap">
                             <img style={{maxWidth: 250}} src={cocktail.strDrinkThumb} alt="" className="cocktail__image"/>
                         </div>
                         {ingredientsTable()}
-                        <p style={{maxWidth: 400}}>{cocktail.strInstructions}</p>                        
+                        <p style={{maxWidth: 400}}>{cocktail.strInstructions}</p>
+                        <hr/>
+                        <p style={{maxWidth: 400}}>
+                            <i>Переведено сервисом «<a target="_blank" href="http://translate.yandex.ru/">Яндекс.Переводчик</a>»</i><br/>
+                        </p>                        
+                        <p style={{maxWidth: 400}}>
+                            {translate.description}
+                        </p>
                     </div>
                 }
             </div>

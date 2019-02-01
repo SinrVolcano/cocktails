@@ -1,42 +1,28 @@
 import { observable, action } from 'mobx';
 import { Drink, DrinksResponse } from '../types/drink';
+import { responseProcess } from '../services/common';
+import { getYandexTranslate } from '../services/getYandexTranslate'
 
 export class ApplicationStore {
     @observable cocktail: Drink;
-    @observable state: any = null;
-
-    responseProcess = async (response: Response) => {
-        if (response.status === 200) {
-            const json: DrinksResponse = await response.json();
-            this.getCocktailSuccess(json);
-        }
-    } 
-    getJson = async (response: Response) => {
-        return await response.json();
-    }
-    getCocktailResponse = async () => {        
-        return await fetch('https://www.thecocktaildb.com/api/json/v1/1/random.php');
-    }
+    @observable cocktailState: string;
+    @observable translateState: string;
+    @observable descriptionRu: string;
 
 
     @action.bound
     async getCocktail() {
-        this.state = 'pending';
-        const response: Response = await this.getCocktailResponse();
-        this.responseProcess(response);
+        this.cocktailState = 'pending';
+        const json = await responseProcess('https://www.thecocktaildb.com/api/json/v1/1/random.php', null);
+        this.cocktailState = 'done';
+        this.cocktail = json.drinks[0];
+        this.descriptionRu = await this.getTranslate(this.cocktail.strInstructions)
     }
     @action.bound
-    getCocktailSuccess(json: DrinksResponse) {
-        console.log(json);
-        setTimeout(()=>{
-            this.state = 'done';
-        }, 4500);
-        
-        this.cocktail = json.drinks[0];              
+    async getTranslate(text: string) {
+        this.translateState = 'pending';
+        const translateResponse = await getYandexTranslate(text);
+        this.translateState = 'done';
+        return translateResponse.text[0];
     }    
-    @action.bound
-    getCocktailError(error: any) {
-        console.log(error);
-        this.state = 'error';
-    }
 }
